@@ -1,0 +1,230 @@
+﻿@{
+    ViewBag.Title = "NewInvoice";
+    Layout = "~/Areas/UserArea/Views/Shared/userlayout.cshtml";
+}
+
+<script>
+    var productdata = [];
+    var Product_name = "";
+    var finaltotal = 0;
+
+    $(document).ready(function () {
+        FetchCustomers();
+        FetchProducts();
+        $("#ddproduct").change(function () {
+            FetchProductData();
+        });
+        $("#txtquantity").on('input', function () {
+            CalculateAmount();
+        });
+
+        $("#btnadd").click(function () {
+            FetchProductData();
+            AddProduct();
+        });
+
+        $("#btnsubmit").click(function () {
+            SubmitInvoice();
+        });
+    });
+
+    function FetchCustomers() {
+        $.ajax({
+            url: '/Customer/GetCustomers',
+            method: 'get',
+            contentType: 'application/json',
+            success: function (resp) {
+                $.each(resp, function (i, d) {
+                    $("#ddcustomer").append("<option value='" + d.Customer_id + "'>" + d.Customet_name + "</option>");
+                });
+            }
+        });
+    }
+
+    function FetchProducts() {
+        $.ajax({
+            url: '/Product/GetItems',
+            method: 'get',
+            contentType: 'application/json',
+            success: function (resp) {
+                $.each(resp, function (i, d) {
+                    $("#ddproduct").append("<option value='" + d.Product_id + "'>" + d.Product_name + "</option>");
+                });
+            }
+        });
+    }
+
+    function FetchProductData() {
+        var id = $("#ddproduct").val();
+        $.ajax({
+            url: '/Product/GetItem/' + id,
+            method: 'get',
+            contentType: 'application/json',
+            success: function (resp) {
+                Product_name = resp.Product_name;
+
+                $("#txtrate").val(resp.Rate);
+                $("#txttax").val(resp.Tax);
+                $("#txtsquantity").val(resp.Stock_quantity);
+                CalculateAmount();
+            }
+        });
+    }
+
+    function CalculateAmount() {
+        var rate = parseFloat($("#txtrate").val());
+        var quantity = parseInt($("#txtquantity").val());
+        var tax = parseFloat($("#txttax").val());
+
+        if (!isNaN(rate) && !isNaN(quantity) && !isNaN(tax)) {
+            var amount = (rate * quantity) + (rate * quantity * tax / 100);
+            $("#txtamount").val(amount.toFixed(2));
+        } else {
+            $("#txtamount").val("");
+        }
+    }
+
+    function AddProduct() {
+        var productid = $("#ddproduct").val();
+        var rate = parseFloat($("#txtrate").val());
+        var quantity = parseInt($("#txtquantity").val());
+        var tax = parseFloat($("#txttax").val());
+
+        var amount = parseFloat($("#txtamount").val());
+
+        var st = {
+            "Product_id": productid,
+            "Product_name": Product_name,
+            "Rate": rate,
+            "Tax": tax,
+            "Quantity": quantity,
+            "Total_ammount": amount
+        };
+
+        productdata.push(st);
+        Filltable();
+    }
+
+    function Filltable() {
+        $("#tbldata").empty();
+        finaltotal = 0;
+        $.each(productdata, function (i, d) {
+            finaltotal += parseFloat(d.Total_ammount);
+            $("#tbldata").append("<tr><td>" + (i + 1) + "</td><td>" + d.Product_name + "</td><td>" + d.Rate + "</td><td>" + d.Tax + "</td><td>" + d.Quantity + "</td><td>" + d.Total_ammount + "</td></tr>");
+        });
+        $("#finalAmount").html(finaltotal.toFixed(2));
+    }
+
+    function SubmitInvoice() {
+        var cid = $("#ddcustomer").val();
+        var dt = $("#txtdate").val();
+        var st = { "Customer_id": cid, "Invice_date": dt, "Total_ammount": finaltotal, "tblinvice_products": productdata };
+
+        $.ajax({
+            url: '/Invoice/GenerateInvoice',
+            method: 'post',
+            data: JSON.stringify(st),
+            contentType: 'application/json',
+            success: function (resp) {
+                alert(resp);
+                window.location.href = "/Invoice/";
+            },
+            error: function (xhr, status, error) {
+                alert("Error: " + error);
+            }
+        });
+    }
+</script>
+
+<h2>NewInvoice</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="ddcustomer">Customer Name</label>
+            <select id="ddcustomer" class="form-control">
+                <option selected disabled>Select Customer</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="txtdate">Invoice Date</label>
+            <input type="date" id="txtdate" class="form-control" />
+        </div>
+    </div>
+</div>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="ddproduct">Product</label>
+            <select id="ddproduct" class="form-control">
+                <option selected disabled>Select Product</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="txtrate">Rate</label>
+            <input type="text" id="txtrate" class="form-control" />
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="txttax">Tax</label>
+            <input type="text" id="txttax" class="form-control" />
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="txtsquantity">Stock Quantity</label>
+            <input type="text" id="txtsquantity" class="form-control" />
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="txtquantity">Quantity</label>
+            <input type="text" id="txtquantity" class="form-control" />
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="form-group">
+            <label for="txtamount">Amount</label>
+            <input type="text" id="txtamount" class="form-control" />
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <button type="button" class="btn btn-primary" id="btnadd">Add Product</button>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Sr. No</th>
+                <th>Product</th>
+                <th>Rate</th>
+                <th>Tax</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody id="tbldata"></tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" style="text-align:right">Total</td>
+                <td id="finalAmount">0.00</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<hr />
+<input type="button" value="Submit Invoice" id="btnsubmit" />

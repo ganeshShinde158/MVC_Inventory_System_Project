@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="6288da65112544ada67e090548aa0918" Name="Diagram1">
+        <EntityTypeShape EntityType="BillingDBModel.tblcustomer" Width="1.5" PointX="0.75" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="BillingDBModel.tblinvice_details" Width="1.5" PointX="3" PointY="3.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="BillingDBModel.tblinvice_payments" Width="1.5" PointX="5.25" PointY="3.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="BillingDBModel.tblinvice_products" Width="1.5" PointX="5.25" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="BillingDBModel.tblproduct" Width="1.5" PointX="3" PointY="7.75" IsExpanded="true" />
+        <AssociationConnector Association="BillingDBModel.fkcid" ManuallyRouted="false" />
+        <AssociationConnector Association="BillingDBModel.fkinid" ManuallyRouted="false" />
+        <AssociationConnector Association="BillingDBModel.fkinviceid" ManuallyRouted="false" />
+        <AssociationConnector Association="BillingDBModel.fkpid" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
